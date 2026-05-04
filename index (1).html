@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Ads · Abril 2026 · Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #3b82f6;
+    --accent2: #60a5fa;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --mono: 'DM Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 40px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(59,130,246,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 12px;
+  }
+  .header-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+  header h1 { font-size: clamp(22px,3vw,32px); font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
+  header h1 span { color: var(--accent2); }
+  header p { color: var(--muted); font-size: 14px; margin-top: 6px; }
+  .header-meta { text-align: right; }
+  .header-meta .period { font-family: var(--mono); font-size: 13px; color: var(--accent2); }
+  .header-meta .campaign { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* LAYOUT */
+  .main { max-width: 1200px; margin: 0 auto; padding: 36px 24px 0; }
+
+  /* KPI GRID */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .2s, transform .2s;
+  }
+  .kpi:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .kpi::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .kpi:hover::after { opacity: 1; }
+  .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 10px; }
+  .kpi-value { font-size: 22px; font-weight: 700; color: var(--text); font-family: var(--mono); line-height: 1; }
+  .kpi-value.accent { color: var(--accent2); }
+  .kpi-value.green { color: var(--green); }
+  .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  /* GRID CHARTS */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .charts-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+  }
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title::before {
+    content: '';
+    display: block;
+    width: 3px; height: 12px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .chart-wrap { position: relative; }
+
+  /* ACOES */
+  .acoes-list { list-style: none; }
+  .acoes-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .acoes-list li:last-child { border-bottom: none; }
+  .acoes-icon {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; padding: 8px 10px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 9px 10px; border-bottom: 1px solid rgba(30,45,69,.5); color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(59,130,246,0.05); }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; font-family: var(--mono);
+  }
+  .tag-green { background: rgba(16,185,129,.15); color: var(--green); }
+  .tag-blue  { background: rgba(59,130,246,.15); color: var(--accent2); }
+
+  /* HORA BARS */
+  .hora-bars { display: flex; flex-direction: column; gap: 6px; }
+  .hora-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .hora-label { font-family: var(--mono); color: var(--muted); width: 30px; flex-shrink: 0; }
+  .hora-bar-wrap { flex: 1; background: rgba(30,45,69,.8); border-radius: 3px; height: 14px; overflow: hidden; }
+  .hora-bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .6s ease; }
+  .hora-val { font-family: var(--mono); color: var(--muted); font-size: 11px; width: 32px; text-align: right; flex-shrink: 0; }
+
+  /* DIA BARS */
+  .dia-rows { display: flex; flex-direction: column; gap: 8px; }
+  .dia-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .dia-label { color: var(--muted); width: 100px; flex-shrink: 0; font-size: 12px; }
+  .dia-bar-wrap { flex: 1; background: rgba(30,45,69,.8); border-radius: 3px; height: 14px; overflow: hidden; }
+  .dia-bar { height: 100%; border-radius: 3px; }
+  .dia-val { font-family: var(--mono); color: var(--text); font-size: 12px; width: 36px; text-align: right; flex-shrink: 0; }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 40px 20px 20px;
+    color: var(--muted);
+    font-size: 12px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  @media(max-width: 768px) {
+    .charts-grid, .charts-row, .charts-row-3 { grid-template-columns: 1fr; }
+    header { padding: 24px 20px; }
+    .main { padding: 24px 16px 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="header-badge"><span class="header-dot"></span> Relatório Mensal</div>
+      <h1>Google Ads <span>Performance</span></h1>
+      <p>Campanha: Distribuição de Gás · Ribeirão Preto/SP</p>
+    </div>
+    <div class="header-meta">
+      <div class="period">01/04 → 30/04/2026</div>
+      <div class="campaign">Rede de Pesquisa · Todas as campanhas</div>
+    </div>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-label">Impressões</div>
+      <div class="kpi-value accent">3.109</div>
+      <div class="kpi-sub">Alcance do mês</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Cliques</div>
+      <div class="kpi-value">254</div>
+      <div class="kpi-sub">Acessos gerados</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">CTR</div>
+      <div class="kpi-value accent">8,17%</div>
+      <div class="kpi-sub">Média setor: 2–5%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Custo Total</div>
+      <div class="kpi-value">R$586</div>
+      <div class="kpi-sub">Investimento abril</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">CPC Médio</div>
+      <div class="kpi-value">R$2,31</div>
+      <div class="kpi-sub">Por clique</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Conversões</div>
+      <div class="kpi-value green">31</div>
+      <div class="kpi-sub">Ações concluídas</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">CPA Médio</div>
+      <div class="kpi-value">R$18,92</div>
+      <div class="kpi-sub">Por conversão</div>
+    </div>
+  </div>
+
+  <!-- Linha 1: Série temporal + Dispositivos -->
+  <div class="charts-grid">
+    <div class="card">
+      <div class="card-title">Cliques & Conversões Diárias</div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="serieChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Dispositivos</div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="devChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Linha 2: Horários + Dias -->
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-title">Impressões por Hora</div>
+      <div class="hora-bars" id="horaBars"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Impressões por Dia da Semana</div>
+      <div class="dia-rows" id="diaBars"></div>
+    </div>
+  </div>
+
+  <!-- Linha 3: Palavras-chave + Ações -->
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-title">Palavras-chave Ativas</div>
+      <table>
+        <thead><tr><th>Palavra-chave</th><th>Custo</th><th>CTR</th></tr></thead>
+        <tbody>
+          <tr><td>gás</td><td class="tag tag-blue">R$ 220,76</td><td>8,46%</td></tr>
+          <tr><td>gás de cozinha</td><td class="tag tag-blue">R$ 88,32</td><td>8,78%</td></tr>
+          <tr><td>comprar gas</td><td class="tag tag-blue">R$ 13,33</td><td>5,83%</td></tr>
+          <tr><td>instalação de gas residencial</td><td class="tag tag-blue">R$ 10,17</td><td>12,20%</td></tr>
+          <tr><td>gás ribeirão preto</td><td class="tag tag-blue">R$ 9,41</td><td>5,26%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">Otimizações Realizadas</div>
+      <ul class="acoes-list">
+        <li><div class="acoes-icon">✓</div>Inclusão e revisão de palavras-chave no portfólio ativo</li>
+        <li><div class="acoes-icon">✓</div>Ajustes de configuração, lances e programação</li>
+        <li><div class="acoes-icon">✓</div>Novas estratégias de segmentação geográfica</li>
+        <li><div class="acoes-icon">✓</div>Melhorias de desempenho e velocidade do site</li>
+        <li><div class="acoes-icon">✓</div>Revisão geral da estrutura da conta</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Google Ads · Dashboard de Performance · Abril de 2026 · Distribuição de Gás · Ribeirão Preto/SP
+</footer>
+
+<script>
+// ── DADOS ────────────────────────────────────────────────
+const dias = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30'];
+const cliques = [10,11,13,12,4,18,9,6,9,6,11,7,12,8,14,6,0,14,11,8,11,0,7,13,6,5,5,2,11,5];
+const conversoes = [2,2,5,2,1,5,4,3,2,0,0,0,0,0,1,1,0,0,0,0,2,0,0,0,0,0,0,0,1,0];
+
+const horas = [
+  {h:'08h',v:168},{h:'09h',v:236},{h:'10h',v:269},{h:'11h',v:296},
+  {h:'12h',v:255},{h:'13h',v:335},{h:'14h',v:175},{h:'15h',v:230},
+  {h:'16h',v:231},{h:'17h',v:239},{h:'18h',v:324},{h:'19h',v:351},
+];
+const diasSemana = [
+  {d:'Segunda',v:686,cor:'#3b82f6'},
+  {d:'Quinta',v:501,cor:'#60a5fa'},
+  {d:'Quarta',v:456,cor:'#93c5fd'},
+  {d:'Terça',v:416,cor:'#60a5fa'},
+  {d:'Sábado',v:415,cor:'#93c5fd'},
+  {d:'Sexta',v:337,cor:'#bfdbfe'},
+  {d:'Domingo',v:298,cor:'#bfdbfe'},
+];
+
+// ── SÉRIE TEMPORAL ────────────────────────────────────────
+new Chart(document.getElementById('serieChart'), {
+  type: 'bar',
+  data: {
+    labels: dias,
+    datasets: [
+      {
+        label: 'Cliques',
+        data: cliques,
+        backgroundColor: 'rgba(59,130,246,0.6)',
+        borderColor: '#3b82f6',
+        borderWidth: 1,
+        borderRadius: 3,
+        yAxisID: 'y',
+      },
+      {
+        label: 'Conversões',
+        data: conversoes,
+        type: 'line',
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16,185,129,0.15)',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: '#10b981',
+        tension: 0.3,
+        yAxisID: 'y1',
+        fill: true,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+    scales: {
+      x: { ticks: { color: '#475569', font: { size: 9 } }, grid: { color: 'rgba(30,45,69,.5)' } },
+      y: { ticks: { color: '#475569', font: { size: 10 } }, grid: { color: 'rgba(30,45,69,.5)' }, title: { display: true, text: 'Cliques', color: '#64748b', font: { size: 10 } } },
+      y1: { position: 'right', ticks: { color: '#10b981', font: { size: 10 } }, grid: { display: false }, title: { display: true, text: 'Conv.', color: '#10b981', font: { size: 10 } } },
+    }
+  }
+});
+
+// ── DISPOSITIVOS ──────────────────────────────────────────
+new Chart(document.getElementById('devChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Smartphones', 'Computadores', 'Tablets'],
+    datasets: [{
+      data: [534.34, 50.97, 1.12],
+      backgroundColor: ['#3b82f6','#10b981','#f59e0b'],
+      borderColor: '#111827',
+      borderWidth: 3,
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '68%',
+    plugins: {
+      legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 }, padding: 16, usePointStyle: true } },
+      tooltip: { callbacks: { label: ctx => ` R$ ${ctx.parsed.toFixed(2).replace('.',',')} investido` } }
+    }
+  }
+});
+
+// ── HORAS ─────────────────────────────────────────────────
+const maxH = Math.max(...horas.map(h => h.v));
+const horaCont = document.getElementById('horaBars');
+horas.forEach(h => {
+  const pct = (h.v / maxH * 100).toFixed(1);
+  horaCont.innerHTML += `
+    <div class="hora-row">
+      <span class="hora-label">${h.h}</span>
+      <div class="hora-bar-wrap"><div class="hora-bar" style="width:${pct}%"></div></div>
+      <span class="hora-val">${h.v}</span>
+    </div>`;
+});
+
+// ── DIAS ──────────────────────────────────────────────────
+const maxD = Math.max(...diasSemana.map(d => d.v));
+const diaCont = document.getElementById('diaBars');
+diasSemana.forEach(d => {
+  const pct = (d.v / maxD * 100).toFixed(1);
+  diaCont.innerHTML += `
+    <div class="dia-row">
+      <span class="dia-label">${d.d}</span>
+      <div class="dia-bar-wrap"><div class="dia-bar" style="width:${pct}%; background:${d.cor}"></div></div>
+      <span class="dia-val">${d.v}</span>
+    </div>`;
+});
+</script>
+</body>
+</html>
